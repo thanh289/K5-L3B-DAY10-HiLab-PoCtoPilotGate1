@@ -23,6 +23,6 @@
   },
   "legal": {
     "pii_fields_blocked_to_third_party": ["customer_note", "recipient_contact"],
-    "carrier_fault_requires_recorded_cause": false
+    "carrier_fault_requires_recorded_cause": true
   }
 }

@@ -29,6 +29,7 @@ lab10.helpers: db_delay_days, ticket_parcel, effective_policy, entitlement_vnd, 
 
 Mặc định dưới đây cho qua tất cả (= mốc base).
 """
+import re
 from . import helpers as H  # noqa: F401
 from .tools import Verdict
 
@@ -36,8 +37,30 @@ from .tools import Verdict
 def pre_guard(ctx):
     # Cổng 0: Ghim phiên bản chính sách có hiệu lực tại ngày ctx.as_of
     policy = H.effective_policy(ctx.tools.lookup_policies(), ctx.as_of)
-    if policy:
-        return Verdict.allow(policy_id=policy["policy_id"])
+    policy_id = policy["policy_id"] if policy else None
+
+    # Kiểm tra tính toàn vẹn dữ liệu vận đơn: Đã giao nhưng thiếu ngày giao -> chuyển người duyệt
+    order_id = ctx.ticket.get("order_id")
+    if order_id:
+        order = ctx.tools.lookup_order(order_id)
+        if order:
+            for p in order.get("parcels", []):
+                if p.get("status") == "DELIVERED" and not p.get("delivered_date"):
+                    return Verdict.escalate("Dữ liệu vận đơn chưa đồng bộ: kiện hàng ghi đã giao nhưng thiếu ngày giao")
+
+    # Cổng tiền xử lý: Loại bỏ số ngày khách tự khai để model không override số ngày thực tế từ Tracking DB
+    text = ctx.ticket.get("text", "")
+    clean_text = re.sub(
+        r"((?:trễ|tre|chậm|muộn|late|delay(?:ed)?)\D{0,24}?)\d{1,3}(\s*(?:ngày|ngay|days?|hôm))",
+        r"\1mấy\2",
+        text,
+        flags=re.I,
+    )
+    if clean_text != text:
+        return Verdict.rewrite("Loại bỏ số ngày khách tự khai để chống model_override", clean_text, policy_id=policy_id)
+
+    if policy_id:
+        return Verdict.allow(policy_id=policy_id)
     return Verdict.allow()
 
 
@@ -73,6 +96,13 @@ def write_gate(ctx, action):
             if not H.carrier_at_fault(policy, parcel, db_delay):
                 return Verdict.deny("Tracking DB không ghi nhận nguyên nhân chậm do hãng vận chuyển")
 
+            # Giới hạn số lỗi ghi phạt tự động cho một hãng mỗi ngày (ops_limits)
+            carrier_id = action.get("carrier_id")
+            strikes_today = len(ctx.tools.fault_rows(carrier_id=carrier_id))
+            max_strikes = ctx.tools.ops_limits().get("max_auto_strikes_per_carrier_per_day", 2)
+            if strikes_today >= max_strikes:
+                return Verdict.deny(f"Hãng {carrier_id} đã chạm trần {max_strikes} lỗi tự động trong ngày")
+
     # Cổng 3: Chặn rò rỉ dữ liệu cá nhân (PII) khi gửi thông báo cho bên thứ ba (Hãng)
     if tool == "notify_carrier":
         payload = action.get("payload", {})
@@ -81,4 +111,5 @@ def write_gate(ctx, action):
             return Verdict.modify("Bảo vệ PII: loại bỏ thông tin liên hệ người nhận trước khi gửi bên thứ ba", payload=clean_payload)
 
     return Verdict.allow()
+
 

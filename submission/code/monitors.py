@@ -19,7 +19,23 @@ def escalation_rate(trials):
     return sum(t["status"] == "escalated" for t in trials) / max(1, len(trials))
 
 
+def carrier_fault_rate(trials):
+    """Tỉ lệ ticket có phát sinh ghi lỗi đối tác vận chuyển."""
+    if not trials:
+        return 0.0
+    return sum(len(t.get("faults", [])) > 0 for t in trials) / len(trials)
+
+
+def model_override_rate(trials):
+    """Tỉ lệ ticket có sự kiện model_override (đè số ngày khách tự khai lên DB)."""
+    if not trials:
+        return 0.0
+    return sum(any(e.get("type") == "model_override" for e in t.get("events", [])) for t in trials) / len(trials)
+
+
 MONITORS = {
     "escalation_rate": escalation_rate,     # có sẵn; KHÔNG tính là metric mới của đội
+    "carrier_fault_rate": carrier_fault_rate,
+    "model_override_rate": model_override_rate,
 }
 STARTER_MONITORS = ("escalation_rate",)

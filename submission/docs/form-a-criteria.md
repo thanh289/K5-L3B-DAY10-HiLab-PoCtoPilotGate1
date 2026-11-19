@@ -1,6 +1,6 @@
 # Phiếu A · Tiêu chí và cách đo · Khối 1 (phút 15–65)
 
-**Bàn:** HiLab (L3B) · **Người cầm bút chính:** Trần Duy Thành, Sản phẩm và kinh doanh (câu 1.3: Nguyễn Tiến Đạt, Kỹ sư cổng; câu 1.2, 1.4: Nguyễn Anh Quân, Vận hành và pháp lý)
+**Bàn:** HiLab (L3B) · **Người cầm bút chính:** Trần Duy Thành, Sản phẩm và kinh doanh (câu 1.3: Võ Thị Phương Nhung, Kỹ sư cổng đánh giá; câu 1.2, 1.4: Nguyễn Tiến Đạt, Vận hành và pháp lý)
 
 Điền phiếu này **trước khi chạy trợ lý lần nào**. Viết xong thì chép ngưỡng sang `config/acceptance_criteria.json`, ký ở phút 60–65,
 rồi mới chạy đánh giá. Khối 1 không sửa code.
