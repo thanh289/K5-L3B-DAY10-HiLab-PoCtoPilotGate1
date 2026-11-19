@@ -87,7 +87,7 @@ Trưởng nhóm, Sản phẩm và kinh doanh (Vai 1): lập nhóm và chủ trì
 
 ### Bằng chứng
 
-- Commit `9eee4b7` (ký tiêu chí), `816c8ee` (B3, B7.4), `3065447` (B8), `6b43679` (C5, C7); Phiếu C mục C12 chốt bằng report `R-S1-grade-20261119-171411-e439d2`.
+- Commit `9eee4b7` (ký tiêu chí), `816c8ee` (B3, B7.4), `3065447` (B8), `6b43679` (C5, C7); Phiếu C mục C12 chốt bằng report `R-S1-grade-20261119-175905-e439d2`.
 - Phiếu A (`A1`, `A2`, tiêu chí ký), Phiếu B (`B3`, `B7.4`, `B8`), Phiếu C (`C5`, `C7`, `C12`).
 
 ### Exit ticket
@@ -110,7 +110,7 @@ Kỹ sư cổng, code (Vai 2): viết các cổng phòng ngừa vòng 1 trong `l
 ### Bằng chứng
 
 - Commit `469ca0f` (cổng vòng 1), `750c1d6` (sửa S1 và monitor); code trong `lab10/guards.py`, `lab10/monitors.py`; Phiếu B mục B7.1, Phiếu C mục C7–C8.
-- Report `R-S1-grade-20261119-171411-e439d2`: `PASS-VISIBLE`, monitor mới đã đăng ký và sáng đèn.
+- Report `R-S1-grade-20261119-175905-e439d2`: `PASS-VISIBLE`, monitor mới đã đăng ký và sáng đèn.
 
 ### Exit ticket
 
