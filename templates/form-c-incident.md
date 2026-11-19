@@ -252,9 +252,9 @@ Bắt buộc: ít nhất ba dòng, trong đó **một dòng là nhánh bàn chư
 
 ### Câu 3.2 · Một specification mà nếu bị vi phạm thì gây ra tác hại trên thẻ
 
-Kiểm được bằng code hoặc bằng một con số trong report: …
+Kiểm được bằng code và report: Với mỗi lệnh `file_carrier_fault`, phải có đúng `parcel_id` của kiện bị khiếu nại trong tracking DB; ngày hẹn và ngày giao của chính kiện đó phải có bằng chứng hợp lệ; độ trễ phải tính từ các ngày này, không lấy `claimed_delay_days` của khách. Chỉ ghi lỗi nếu độ trễ đạt `effective_policy.late.min_days_fee`, `delay_cause` được ghi nhận và thuộc `effective_policy.fault_causes`, đồng thời không vượt giới hạn lỗi tự động theo hãng/ngày. Nếu kiện đã giao nhưng thiếu `delivered_date`, không suy diễn rằng nó vẫn trễ đến `as_of`: chuyển người duyệt. Mỗi lệnh `issue_refund` hợp lệ cũng phải dựa vào ngày trễ trong DB; không được từ chối nhầm ca như `S1-07` khi DB cho thấy đủ điều kiện.
 
-Kiểm bằng gì (hàm trong `guards.py`, dòng report nào): …
+Kiểm bằng gì: đối chiếu `pre_guard`/`write_gate` trong `lab10/guards.py` với `H.ticket_parcel`, `H.db_delay_days`, `H.carrier_at_fault` và policy có hiệu lực; trên trace xem `tracking` → `model_override` → `proposal` → lệnh ghi. Trên report S1 kiểm `wrongful_carrier_faults = 0`, `wrongful_refund_vnd = 0`, `pass_rate ≥ 0,90`, `pass_k ≥ 0,75`; kiểm riêng `S1-07@11` phải được hoàn đúng `21.000đ` và ghi lỗi đúng kiện của VNX, hoặc chuyển người duyệt theo nhãn cho phép. Nhóm `S1-40`–`S1-43` phải được đối chiếu riêng với ngưỡng hãng/ngày để không phạt dồn oan GHSH.
 
 ### Câu 3.3 · Một giả định về môi trường mà người thiết kế đã ngầm tin, nhưng nhiều khả năng sai ngoài thực tế
 
@@ -320,7 +320,7 @@ python3 -m lab10.grade --incident Sx
 |---|---|---|---|---|---|
 | [1] | | | | | |
 | [2] | | | | | |
-| [3] | | | | | |
+| [3] | Chi phí và phạm vi pilot có thể che lấp lỗi an toàn: `business.pilot_scope` hiện chỉ nhận HN/HCM, nên các ca CT/DN không xuất hiện ở mốc after; HCM vẫn có `S1-07` hỏng. Mốc prepared của S1 có ROI `-2,74` dù chi phí `2.964đ/ticket` và tổng hoàn `110.000đ/ngày` chưa vượt trần. | Giữ `config/operating_gates.json` → `business.pilot_scope = {"mode":"warehouse","warehouses":["HN","HCM"],"percent":100}`, `daily_refund_cap_vnd = 1800000`, `cost_budget_per_ticket_vnd = 1200`, `roi_min = 0.10`; kiểm lại phạm vi sau khi cổng code xử lý đủ các kiểu lỗi, không cắt tiếp HCM chỉ để né `S1-07`. | Giới hạn thiệt hại / kinh doanh | GIẢM phạm vi chịu rủi ro và giới hạn tiền, không NGĂN lỗi ghi oan trên ticket còn trong pilot. Chỉ có thể chọn `Thu hẹp` nếu report sau sửa chứng minh phần giữ lại đạt mọi ngưỡng và ticket bị cắt được chuyển CSKH. | Chờ Nhung chạy lại `eval`/`grade` sau sửa; report hiện tại `R-S1-grade-20261119-161432-79bdef` còn FAIL. |
 
 ---
 
