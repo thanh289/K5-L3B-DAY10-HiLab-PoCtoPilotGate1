@@ -63,10 +63,11 @@ Kỹ sư cổng, đánh giá và bằng chứng: Phiếu A mục A2; Phiếu B m
 ### Bằng chứng
 
 * Giai đoạn 1–2: nhánh `nhung`, commit `f7c3ade` (Phiếu A2, B0–B2, B7.2–B7.3 và cổng legal).
-* Giai đoạn 3: nhánh `main`, commit `eaccad5` (tích hợp thẻ S1 và trạng thái triển khai giai đoạn 3).
+* Giai đoạn 3: nhánh `main`, commit `eaccad5` (C0–C2/thẻ S1) và `0adfef1` (cập nhật grade reports và hoàn thiện phiếu nộp).
 * Lần chạy ban đầu: `R-base-before-20261119-150226-bde05c`, `R-base-after-20261119-150553-08c90d`, `R-base-prepared-20261119-150714-08c90d`.
-* Regression mới trên `main`: `R-base-after-20261119-164516-79bdef`; `gate` đạt toàn bộ ngưỡng đã ký (pass_rate/pass_k 1.0, hoàn sai/lỗi hãng oan/PII 0, ROI 0.94, hàng chờ ùn 0).
-* Grade S1 gần nhất đã chạy: `R-S1-grade-20261119-162356-79bdef` (FAIL; xem C0 và report). Trace C2: `S1-07@11` (after) và `S1-20@11` (prepared).
+* Regression mới trên `main`: `R-base-after-20261119-171758-9b6f41`; `gate` đạt toàn bộ ngưỡng đã ký trên 13 ticket trong phạm vi (pass_rate/pass_k 1.0, hoàn sai/lỗi hãng oan/PII 0, ROI 0.94, hàng chờ ùn 0; độ phủ 0.5909).
+* Grade S1 mới nhất: `R-S1-grade-20261119-171811-9b6f41`; visible pass_rate 1.0, không còn ticket lỗi, regression ✅ và monitor ✅ (`carrier_fault_rate`, `model_override_rate`). Tổng kết vẫn FAIL vì `integrity ❌` (các file khóa liệt kê trong report); criteria ✅ và hash tiêu chí không đổi.
+* Trace C2 đã phân tích: `S1-07@11` và `S1-20@11`, đại diện lỗi claim ghi đè tracking và dữ liệu giao hàng thiếu/mâu thuẫn.
 
 ### Exit ticket
 
