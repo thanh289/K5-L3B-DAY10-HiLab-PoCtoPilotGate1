@@ -30,10 +30,10 @@ Mỗi lệnh `lab10.eval` và `lab10.grade` tự ghi một dòng vào `runs/jour
 
 | # | Mã lần chạy | Bộ ticket · mốc | Đổi MỘT thứ gì so với lần trước | pass_rate (khoảng tin cậy 95%) | pass_k | Hoàn sai (đ) · lỗi hãng oan · lộ dữ liệu | Tỉ lệ chuyển người | Kết luận (một câu) |
 |---|---|---|---|---|---|---|---|---|
-| 1 | | Sx · prepared | nhận thẻ đã bốc, chưa sửa thêm (đúng cổng vòng 1 đã chốt) | | | | | |
-| 2 | | Sx · after | | | | | | |
-| 3 | | Sx · after | | | | | | |
-| 4 | | base · after | (kiểm không regression) | | | | | |
+| 1 | `R-S1-prepared-20261119-162358-79bdef` | S1 · prepared | Chạy thẻ S1 với cổng vòng 1 đã chốt, chưa áp cổng vòng 2 | 0.3077 [0.0769, 0.5385] | 0.3077 | 985.000 · 30 · 0 | 0.0 | Cổng vòng 1 không cải thiện thẻ: còn 30 lỗi hãng oan và 985.000đ hoàn sai. |
+| 2 | `R-S1-after-20261119-162358-79bdef` | S1 · after | Áp dụng cổng vòng 2 và phạm vi pilot hiện tại | 0.875 [0.625, 1.0] | 0.875 | 0 · 0 · 0 | 0.0 | Hết hoàn sai/lỗi hãng oan nhưng còn thiếu hoàn 105.000đ ở S1-07 (5/5 seed); chưa đạt pass_rate 0.90. |
+| 3 | `R-S1-grade-20261119-162356-79bdef` | S1 · base / prepared / after | Chạy grade tổng hợp và kiểm tra integrity, criteria, regression, monitor | prepared 0.3077 · after 0.875 | prepared 0.3077 · after 0.875 | prepared 985.000 · 30 · 0; after 0 · 0 · 0 | 0.0 | Grade FAIL: integrity và monitor không đạt; S1-07 còn hỏng sau sửa. |
+| 4 | `R-base-after-20261119-162617-79bdef` | base · after | Kiểm regression bộ nền với cổng S1 hiện tại | 1.0 [1.0, 1.0] | 1.0 | 0 · 0 · 0 | 0.2308 | Các ticket trong phạm vi đều đạt, nhưng độ phủ chỉ 0.5909 (13/22 ticket/ngày). |
 
 ---
 
@@ -47,19 +47,19 @@ Chạy **trước khi sửa bất cứ thứ gì**:
 python3 -m lab10.grade --incident Sx
 ```
 
-- Mã lần chạy grade: `__________` · base: `__________` · prepared: `__________`
-- Cổng vòng 1 đỡ được ô / con số nào (so cột base với cột prepared): …
-- Khối kinh doanh và vận hành còn dòng nào vượt trần: …
+- Mã lần chạy grade: `R-S1-grade-20261119-162356-79bdef` · base: `R-S1-before-20261119-162358-79bdef` · prepared: `R-S1-prepared-20261119-162358-79bdef`
+- Cổng vòng 1 đỡ được ô / con số nào (so cột base với cột prepared): Không đỡ được: hai cột cùng pass_rate 0.3077, hoàn sai 985.000đ, 30 lỗi hãng oan và thiếu hoàn 105.000đ.
+- Khối kinh doanh và vận hành còn dòng nào vượt trần: Không có hàng chờ ùn hoặc trần hoàn ngày bị vượt; nhưng ở prepared chi phí mỗi ticket 2.964đ so với làm tay 10.000đ vẫn đi kèm tiết kiệm ròng -105.531đ/ngày và ROI -2.74, dưới ROI tối thiểu 0.10.
 
 **Mở lại pre-mortem (Phiếu B mục B6), viết bằng bút khác màu.** Với thẻ S1, S3, S4, S5 đây là một phần của phần riêng theo thẻ.
 
-- Sự cố trên thẻ thuộc lăng kính nào (kỹ thuật, kinh doanh, con người và vận hành, pháp lý)? …
-- Có nằm trong các lý do bàn đã viết không? Nếu có: cổng vòng 1 đã đỡ được bao nhiêu (đọc cột prepared trong report)? Nếu không: vì sao cả bàn không nghĩ tới? …
-- Lý do còn thiếu, thêm bây giờ:
+- Sự cố trên thẻ thuộc lăng kính nào (kỹ thuật, kinh doanh, con người và vận hành, pháp lý)? Kỹ thuật/dữ liệu và pháp lý/đối tác: trường tracking thiếu hoặc bị diễn giải sai đã tạo hàng loạt cáo buộc sai cho GHSH.
+- Có nằm trong các lý do bàn đã viết không? Nếu có: cổng vòng 1 đã đỡ được bao nhiêu (đọc cột prepared trong report)? Nếu không: vì sao cả bàn không nghĩ tới? B6 đã dự liệu số khách tự khai đè tracking và lỗi `delay_cause` trống, nhưng chưa nêu trường hợp `delivered_date` trống trong khi `status = DELIVERED`; cổng vòng 1 không giảm số liệu nào trên thẻ S1.
+- Lý do còn thiếu, thêm bây giờ: dữ liệu giao hàng mâu thuẫn đã bị coi như độ trễ đang tiếp diễn; cần kiểm tính nhất quán giữa `status` và `delivered_date` trước khi hoàn tiền hoặc ghi lỗi hãng.
 
 | Lý do thất bại (viết ở thì quá khứ) | Lăng kính | Kiểm được bằng gì (trace / data / config nào) |
 |---|---|---|
-| | | |
+| Dữ liệu kiện đã mâu thuẫn hoặc thiếu dấu thời gian giao nhưng trợ lý vẫn ghi lỗi GHSH tự động. | Kỹ thuật / pháp lý | `incidents/S1/world_patch.json` (`status`, `delivered_date`), trace `S1-20@11`, số lỗi hãng oan trong grade |
 
 ---
 
@@ -70,39 +70,40 @@ python3 -m lab10.grade --incident Sx
 Dò ít nhất 2 ticket hỏng theo kiểu KHÁC nhau:
 
 ```bash
-python3 -m lab10.trace --suite Sx --ticket <ID> --seed 11
+python3 -m lab10.trace --suite S1 --ticket S1-07 --seed 11 --stage after
+python3 -m lab10.trace --suite S1 --ticket S1-20 --seed 11 --stage prepared
 ```
 
 Ba loại lỗi: **giới hạn của hệ thống** · **lỗi ngữ cảnh** · **lỗi chìm** (cả người dùng lẫn hệ thống đều không nhận ra; nguy hiểm nhất,
 người chịu hại thường là bên thứ ba). Định nghĩa đầy đủ và ví dụ: Phiếu B mục B2.
 
-**Tác hại của thẻ:** cho ai `____` · đo bằng gì `____` · bao nhiêu ở mốc base `____`
+**Tác hại của thẻ:** cho hãng GHSH và đội đối soát · đo bằng số lỗi hãng oan và tiền hoàn sai · mốc base có 30 lỗi hãng oan, 985.000đ hoàn sai và 105.000đ hoàn thiếu; 30 lỗi có nguy cơ phạt hợp đồng tới 4.500.000đ qua 5 seed.
 
 ### Phần 1 · Ghi lỗi (bằng chứng là mã ticket@seed và dòng trace, không tả chung chung)
 
 | # | Lỗi: người ta thấy gì (dán dòng trace / sổ cái) | Ai gặp, ai chịu | Hệ trọng (thấp / cao) | Loại lỗi (giới hạn hệ thống / ngữ cảnh / chìm) |
 |---|---|---|---|---|
-| 1 | | | | |
-| 2 | | | | |
+| 1 | `S1-07@11 · after`: trace có `tracking.db_delay_days=4`, rồi `model_override` đổi thành 2; kết quả từ chối, hoàn 0đ dù nhãn cần hoàn 21.000đ và ghi lỗi VNX. | Khách C-14 bị từ chối quyền lợi; LogiX phải xử lý khiếu nại. | cao | lỗi ngữ cảnh |
+| 2 | `S1-20@11 · prepared`: `status=DELIVERED` nhưng `delivered_date=null`; helper tính 6 ngày, trợ lý hoàn 22.000đ và ghi lỗi GHSH dù nhãn yêu cầu chuyển người, không ghi lỗi. | Hãng GHSH bị quy lỗi oan; khách C-06 và LogiX chịu hậu quả đối soát. | cao | lỗi chìm |
 | 3 | | | | |
 
 ### Phần 2 · Tìm nguồn (đánh dấu câu nào đúng với từng lỗi)
 
 | Câu hỏi | Lỗi 1 | Lỗi 2 | Lỗi 3 |
 |---|---|---|---|
-| **Đầu vào:** hệ thống có tự diễn giải / sửa đầu vào của người dùng theo cách họ không lường? Có đặt sai trọng số cho một lời nói hay tín hiệu của người dùng? | | | |
-| **Độ liên quan:** hệ thống có thiếu dữ liệu cần để quyết đúng? Dữ liệu vào có nhiễu, thiếu ổn định? | | | |
-| **Thứ bậc hệ thống:** có hai hệ thống cùng ghi / cùng theo dõi một thứ mà không rõ bên nào là chủ (ví dụ CSKH hoàn tay và trợ lý cùng ghi sổ)? | | | |
-| **Trạng thái hỏng:** nhiều lỗi cộng lại có làm tính năng không dùng được (ví dụ LLM lỗi liên tiếp)? | | | |
+| **Đầu vào:** hệ thống có tự diễn giải / sửa đầu vào của người dùng theo cách họ không lường? Có đặt sai trọng số cho một lời nói hay tín hiệu của người dùng? | Có: khẳng định "2 ngày" ghi đè tracking 4 ngày. | Không: ticket nói hàng đã nhận; lỗi bắt nguồn từ dữ liệu tracking thiếu. | |
+| **Độ liên quan:** hệ thống có thiếu dữ liệu cần để quyết đúng? Dữ liệu vào có nhiễu, thiếu ổn định? | Không thiếu dữ liệu; tracking 4 ngày có sẵn nhưng bị bỏ qua. | Có: `delivered_date` thiếu trong khi `status=DELIVERED`; helper mặc định lấy `as_of`. | |
+| **Thứ bậc hệ thống:** có hai hệ thống cùng ghi / cùng theo dõi một thứ mà không rõ bên nào là chủ (ví dụ CSKH hoàn tay và trợ lý cùng ghi sổ)? | Không có bằng chứng hai hệ thống cùng ghi; một lệnh hoàn tự động. | Không có bằng chứng hai hệ thống cùng ghi; nguồn tracking thiếu/mâu thuẫn. | |
+| **Trạng thái hỏng:** nhiều lỗi cộng lại có làm tính năng không dùng được (ví dụ LLM lỗi liên tiếp)? | Không; luồng hoàn tất nhưng trả kết quả sai theo dữ liệu khách tự khai. | Không; luồng hoàn tất do thiếu kiểm tra trạng thái/date trước lệnh ghi. | |
 
 ### Phần 3 · Hướng xử lý (mỗi lỗi một ô)
 
 | | Lỗi 1 | Lỗi 2 | Lỗi 3 |
 |---|---|---|---|
-| Vì sao người gặp coi đây là lỗi | | | |
-| Kiểu giải pháp: phản hồi cho người dùng / trao quyền kiểm soát cho người / khác | | | |
-| Đường đi của người sau khi có giải pháp (ví dụ: ticket chuyển sang người duyệt → duyệt → khách được trả lời) | | | |
-| Hệ thống học được gì (tín hiệu ghi lại để theo dõi: tên metric trong `monitors.py`) | | | |
+| Vì sao người gặp coi đây là lỗi | Khách đủ điều kiện theo tracking nhưng bị từ chối vì hệ thống tin số khai thấp hơn. | Hãng GHSH nhận cáo buộc sai vì thiếu ngày giao bị hiểu thành đơn còn trễ. |
+| Kiểu giải pháp: phản hồi cho người dùng / trao quyền kiểm soát cho người / khác | Chuyển người duyệt khi claimed delay khác tracking; không để quyết định 0đ lặng lẽ kết thúc. | Khi status/date mâu thuẫn hoặc date thiếu, chuyển người và chặn ghi hoàn/lỗi hãng cho tới khi Ops xác minh. |
+| Đường đi của người sau khi có giải pháp (ví dụ: ticket chuyển sang người duyệt → duyệt → khách được trả lời) | NV-HANH đối chiếu tracking 4 ngày và policy → duyệt hoàn 21.000đ, ghi lỗi đúng kiện nếu hợp lệ → trả lời khách. | Ops xác minh vận đơn GHSH và thời điểm giao → sửa nguồn tracking → người duyệt quyết định → chỉ sau đó mới phản hồi/ghi sổ. |
+| Hệ thống học được gì (tín hiệu ghi lại để theo dõi: tên metric trong `monitors.py`) | Đề xuất `claim_tracking_mismatch_rate`, đếm event `model_override` / ticket; chưa đăng ký trong `MONITORS`. | Đề xuất `delivered_status_missing_date_rate`, đếm parcel có status delivered nhưng thiếu delivered_date; chưa đăng ký trong `MONITORS`. |
 
 Yêu cầu: ít nhất **hai lỗi có nguồn khác nhau** ở phần 2, và ít nhất một lỗi được xếp đúng là **lỗi chìm**.
 
